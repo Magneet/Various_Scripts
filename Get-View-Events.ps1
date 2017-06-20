@@ -42,14 +42,28 @@ $password=Read-host -assecurestring "Please enter your password"
 
 #Connect to View Connection broker
 write-host "Connecting to the connection broker" -ForegroundColor Green
-$hvserver=connect-hvserver $hvservername -domain $domain -username $username -password $password -WarningAction silentlyContinue
+try {
+$hvserver=connect-hvserver $hvservername -domain $domain -username $username -password $password -WarningAction silentlyContinue -erroraction stop
+}
+catch {
+	Write-host "Can't connect to the Connection server please check the credentials." -ForegroundColor Red
+	exit
+	}
 
 #connect to the Event Database
+
 $dbpassword=Read-host -assecurestring "Please enter the password of the account configured in Horizon View to access the event database."
 write-host "Connecting to the database" -ForegroundColor Green
-$eventdb=connect-hvevent -dbpassword $dbpassword
+try {
+	$eventdb=connect-hvevent -dbpassword $dbpassword -erroraction stop
+	}
+catch {
+	Write-host "Can't connect to the Database server please check the password." -ForegroundColor Red
+	exit
+	}
 
 #Retreive information
+
 write-host "Please provide the following information use % as wildcard." -ForegroundColor Green
 $searchuser=Read-Host "Please enter the accountname you need information on?"
 $module=Read-Host "What module do you want the logs for? (Agent,Broker,Client,Tunnel,Framework,Client)"
@@ -61,8 +75,9 @@ $filelocation=Read-host "Please provide filename and location for the exported c
 #Export to file
 
 $lastevent=get-hvevent -hvdbserver $eventdb -timeperiod $maxage -SeverityFilter $sevfilter -userfilter $searchuser -modulefilter $module -messagefilter $message
+
 try {
-	$lastevent | export-csv $filelocation -erroraction stop
+	$lastevent.events  | export-csv $filelocation -erroraction stop
 	}
 catch{
 	write-host "Unable to create the file, please check name and location" -ForegroundColor Red
