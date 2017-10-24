@@ -1,11 +1,10 @@
 #-------------------------------------------------
 # Remove faulty desktops
 # This script has been made to find Horizon VDI desktops in a faulty state.
-# The Script will ask for the state you want to check on and then asks for the desktop you want removed.
-# For mass removing of desktops a seperate script will be created.
+# The Script will ask for the state you want to check on and then marks the desktops for deletion.
 #
 # Please be aware that currently get-hvmachine has an output of a maximum of 1000 entries
-# 
+# this results in this script also handling a maximum of 1000 results at a time.
 #
 # Menu sourced from https://github.com/rgel/PowerShell/blob/master/MS-Module
 # Requires PowerCLI 6.5 or higher
@@ -13,7 +12,7 @@
 # Module can be found at https://github.com/vmware/PowerCLI-Example-Scripts
 #
 # Version 1.0
-# 20-10-2017
+# 24-10-2017
 # Created by: Wouter Kursten
 #
 #-------------------------------------------------
