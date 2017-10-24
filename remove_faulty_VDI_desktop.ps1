@@ -273,7 +273,7 @@ $removedesktop=$desktops | where {$_.base.name -eq $selectdesktop}
 
 try {
 	$services1.machine.machine_delete($removedesktop.id, $spec)
-	write-host "$selectdesktop are be marked for deletion" -ForegroundColor Green
+	write-host "$selectdesktop are marked for deletion" -ForegroundColor Green
 }
 catch {
 	write-host "Error deleting $selectdesktop" -ForegroundColor Red
