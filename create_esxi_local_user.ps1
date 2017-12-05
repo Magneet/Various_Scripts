@@ -25,8 +25,8 @@ catch	{
 $vcenter=Read-Host "Enter vCenter server name"
 $Target = Read-Host "Which hosts? (i.e. server*)"
 $rootpassword = Read-Host "Enter root Password" -AsSecureString
-$accountName = $userPassword = Read-Host "Enter New Username"
-$accountDescription = $userPassword = Read-Host "Enter New User description"
+$accountName = Read-Host "Enter New Username"
+$accountDescription  = Read-Host "Enter New User description"
 $accountPswd = Read-Host "Enter New User Password" -AsSecureString
 $rootuser="root"
 
