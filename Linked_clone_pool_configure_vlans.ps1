@@ -20,20 +20,31 @@
 # Twitter @Magneet_NL
 #-------------------------------------------------
 
-#Variables
+#region Variables
+$hvservername=Read-host "Which Connection broker do you want to connect to?"
+$domain=read-host "Please enter your active directory domain?"
+$username=Read-host "Please enter your useraccount"
+$password=Read-host -assecurestring "Please enter your password"
+$poolname=read-host "What pool to configure?"
+$labelfilter=Read-host "What portgroups do you wnat to configure (use * as wildcard i.e. DVVDI*)"
+$maxlabels=read-host "How many labels to configure per portgroup?"
+#endregion
 
-$poolname='Poolname'
-$domain='domain'
-$username='username'
-$password='Mpassword'
-$connectionserver='connectionserver'
-$maxlabels='5'
-# Use a * as wildcard i.e. "DV*"
-$labelfilter="DVLAB_Internal*"
+#region Connect to Connection Broker
 
-#editing below here is on your own risk
-$hvserver1=connect-hvserver $connectionserver -domain $domain -username $username -password $password -WarningAction silentlyContinue -erroraction stop
-$Services1= $hvServer1.ExtensionData
+Import-module vmware.hv.helper
+write-host "Connecting to the connection broker" -ForegroundColor Green
+try {
+	$hvserver1=connect-hvserver $hvservername -domain $domain -username $username -password $password -WarningAction silentlyContinue -erroraction stop
+	$Services1= $hvServer1.ExtensionData
+}
+catch {
+	Write-host "Can't connect to the Connection server please check the credentials." -ForegroundColor Red
+	exit
+}
+#endregion
+
+#region Gather Data
 $queryService = New-Object VMware.Hv.QueryServiceService
 $defn = New-Object VMware.Hv.QueryDefinition
 $defn.queryEntityType = 'DesktopSummaryView'
@@ -49,6 +60,9 @@ $pool=$Services1.Desktop.desktop_get($poolid.id)
 $networklabelsall=$services1.networklabel.NetworkLabel_ListByHostOrCluster($pool.AutomatedDesktopData.VirtualCenterProvisioningSettings.VirtualCenterProvisioningData.hostorcluster)
 $networklabels=$networklabelsall | where-object {$_.data.name -like $labelfilter}
 $NetworkInterfaceCard=$services1.NetworkInterfaceCard.NetworkInterfaceCard_ListBySnapshot($pool.AutomatedDesktopData.VirtualCenterProvisioningSettings.VirtualCenterProvisioningData.snapshot)
+#endregion
+
+#region build VirtualCenterNetworkingSettings object
 $NetworkInterfaceCardSettings=new-object vmware.hv.desktopNetworkInterfaceCardSettings
 $NetworkInterfaceCardSettings.nic=$NetworkInterfaceCard.id
 $networkLabelAssignmentSpecs=@()
@@ -58,16 +72,18 @@ foreach ($networklabel in $networklabels){
     $NetworkLabelAssignmentSpec.enabled=$True
     $NetworkLabelAssignmentSpec.networklabel=$networklabel.id
     $NetworkLabelAssignmentSpec.maxlabeltype="LIMITED"
-    $NetworkLabelAssignmentSpec.MaxLabel='maxlabels'
+    $NetworkLabelAssignmentSpec.MaxLabel=$maxlabels
     $networkLabelAssignmentSpecs+=$networkLabelAssignmentSpec
     }
 $NetworkInterfaceCardSettings.networkLabelAssignmentSpecs=$networkLabelAssignmentSpecs
-
 $VirtualCenterNetworkingSettings=@()
 $VirtualCenterNetworkingSettings=new-object vmware.hv.DesktopVirtualCenterNetworkingSettings
 $VirtualCenterNetworkingSettings.nics+=$NetworkInterfaceCardSettings
+#endregion
 
+#region apply VirtualCenterNetworkingSettings object
 $desktopService = New-Object VMware.Hv.DesktopService
 $desktopInfoHelper = $desktopService.read($services1, $Pool.Id)
 $desktopinfohelper.getAutomatedDesktopDataHelper().getVirtualCenterProvisioningSettingsHelper().setVirtualCenterNetworkingSettingsHelper($VirtualCenterNetworkingSettings)
 $desktopservice.update($services1, $desktopInfoHelper)
+#endregion
