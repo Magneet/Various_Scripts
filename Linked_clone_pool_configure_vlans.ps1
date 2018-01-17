@@ -27,6 +27,7 @@ $domain='domain'
 $username='username'
 $password='Mpassword'
 $connectionserver='connectionserver'
+$maxlabels='2'
 # Use a * as wildcard i.e. "DV*"
 $labelfilter="DVLAB_Internal*"
 
@@ -57,7 +58,7 @@ foreach ($networklabel in $networklabels){
     $NetworkLabelAssignmentSpec.enabled=$True
     $NetworkLabelAssignmentSpec.networklabel=$networklabel.id
     $NetworkLabelAssignmentSpec.maxlabeltype="LIMITED"
-    $NetworkLabelAssignmentSpec.MaxLabel=2
+    $NetworkLabelAssignmentSpec.MaxLabel='maxlabels'
     $networkLabelAssignmentSpecs+=$networkLabelAssignmentSpec
     }
 $NetworkInterfaceCardSettings.networkLabelAssignmentSpecs=$networkLabelAssignmentSpecs
