@@ -27,7 +27,7 @@ $domain='domain'
 $username='username'
 $password='Mpassword'
 $connectionserver='connectionserver'
-$maxlabels='2'
+$maxlabels='5'
 # Use a * as wildcard i.e. "DV*"
 $labelfilter="DVLAB_Internal*"
 
