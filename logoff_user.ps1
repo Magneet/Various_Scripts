@@ -44,8 +44,8 @@ if($Credentialfile -and ((test-path $Credentialfile) -eq $true)){
         $credentials=Import-Clixml $Credentialfile
         $username=($credentials.username).split("\")[1]
         $domain=($credentials.username).split("\")[0]
-        $password=$credentials.password
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)
+        $secpw=$credentials.password
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secpw)
         $password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
     }
     catch{
