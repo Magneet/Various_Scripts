@@ -18,7 +18,7 @@
     Default: String
     FQDN of the connection server to connect to
 
-    .PARAMETER Username
+    .PARAMETER User
     Mandatory: Yes
     Username of the user to look for
 
@@ -50,7 +50,7 @@ param (
     [string]$User = $false,
 
     [parameter(Mandatory = $true,
-    HelpMessage = "DOmain where the user object exists.")]
+    HelpMessage = "Domain where the user object exists.")]
     [string]$Domain = $false
 )
 
@@ -110,11 +110,11 @@ function Get-HorizonRestData(){
         [int] $pagesize = 500,
 
         [Parameter(Mandatory=$true,
-        HelpMessage='Part after the url in the swagger UI i.e. /rest/external/v1/ad-users-or-groups' )]
+        HelpMessage='Part after the url in the swagger UI i.e. /external/v1/ad-users-or-groups' )]
         [string] $RestMethod,
 
         [Parameter(Mandatory=$true,
-        HelpMessage='Part after the url in the swagger UI i.e. /rest/external/v1/ad-users-or-groups' )]
+        HelpMessage='Part after the url in the swagger UI i.e. /external/v1/ad-users-or-groups' )]
         [PSCustomObject] $accessToken,
 
         [Parameter(Mandatory=$false,
