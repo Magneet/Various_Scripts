@@ -6,7 +6,7 @@
     This script uses the Horizon rest api's to create a new VMware Horizon Desktop Pool
 
     .EXAMPLE
-    .\Horizon_Rest_create_Desktop_Pool.ps1 -Credentials $creds -ConnectionServerURL https://pod1cbr1.loft.lab -jsonfile 'D:\homelab\new-pool-rest.json' -vCenterURL pod1vcr1.loft.lab -DataCenterName "Datacenter_Loft" -ClusterName "Dell 620" -BaseVMName "W21h1-2021-11-05-13-00" -BaseSnapShotName "Created by Packer" -DatastoreNames  ("vdi-200","vdi-500") -VMFolderPath "/Datacenter_Loft/vm" -DesktopPoolName "Rest_Pool_demo2" -DesktopPoolDisplayName "Rest DIsplay name" -DesktopPoolDescription "rest description" -namingmethod "Rest-{n:fixed=2}"
+    Horizon_Rest_create_Desktop_Pool.ps1 -Credentials $creds -ConnectionServerURL https://pod1cbr1.loft.lab -jsonfile 'D:\homelab\new-pool-rest.json' -vCenterURL pod1vcr1.loft.lab -DataCenterName "Datacenter_Loft" -ClusterName "Dell 620" -BaseVMName "W21h1-2021-11-05-13-00" -BaseSnapShotName "Created by Packer" -DatastoreNames  ("vdi-200","vdi-500") -VMFolderPath "/Datacenter_Loft/vm" -DesktopPoolName "Rest_Pool_demo2" -DesktopPoolDisplayName "Rest DIsplay name" -DesktopPoolDescription "rest description" -namingmethod "Rest-{n:fixed=2}" -ADOUrdn "OU=Pool01,OU=VDI,OU=Pod1,OU=VMware,OU=EUC"
 
     .PARAMETER Credential
     Mandatory: No
@@ -65,6 +65,10 @@
     .PARAMETER NamingMethod
     Mandatory: Yes
     Naming method of the vm's
+
+    .PARAMETER ADOUrdn
+    Mandatory: Yes
+    Relative Distinguished Name for the OU where the vm's will be placed
 
     .NOTES
     Minimum required version: VMware Horizon 8 2111
@@ -145,6 +149,11 @@ param (
     HelpMessage = "Path to the folder where the folder for the Desktop Pool will be placed i.e. /Datacenter_Loft/vm")]
     [ValidateNotNullOrEmpty()]
     [string]$VMFolderPath,
+
+    [parameter(Mandatory = $true,
+    HelpMessage = "Relative Distinguished Name for the OU where the vm's will be placed i.e. OU=Pool01,OU=VDI,OU=Pod1,OU=VMware,OU=EUC")]
+    [ValidateNotNullOrEmpty()]
+    [string]$ADOUrdn,
 
     [parameter(Mandatory = $true,
     HelpMessage = "Naming method for the VDI machines.")]
