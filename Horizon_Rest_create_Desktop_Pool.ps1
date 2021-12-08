@@ -270,6 +270,7 @@ $sourcejson.description = $DesktopPoolDescription
 $sourcejson.pattern_naming_settings.naming_pattern = $namingmethod
 
 $json = $sourcejson | convertto-json -Depth 100
+
 try{
     Invoke-RestMethod -Method Post -uri "$ConnectionServerURL/rest/inventory/v1/desktop-pools" -ContentType "application/json" -Headers (Get-HRHeader -accessToken $accessToken) -body $json
 }
