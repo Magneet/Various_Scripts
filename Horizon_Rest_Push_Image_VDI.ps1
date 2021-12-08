@@ -95,12 +95,12 @@ param (
     [string]$DesktopPoolName,
 
     [parameter(Mandatory = $false,
-    HelpMessage = "Name of the Desktop Pool.")]
+    HelpMessage = "True or false for stop on error.")]
     [ValidateNotNullOrEmpty()]
     [bool]$StoponError = $true,
 
     [parameter(Mandatory = $false,
-    HelpMessage = "Name of the Desktop Pool.")]
+    HelpMessage = "Use WAIT_FOR_LOGOFF or FORCE_LOGOFF".")]
     [ValidateSet('WAIT_FOR_LOGOFF','FORCE_LOGOFF', IgnoreCase = $false)]
     [string]$logoff_policy = "WAIT_FOR_LOGOFF",
 

@@ -1,0 +1,73 @@
+{
+  "access_group_id": "daef8c91-fa65-4a39-93aa-24d87d5aca94",
+  "allow_multiple_user_assignments": false,
+  "customization_settings": {
+    "ad_container_rdn": "OU=Pool01,OU=VDI,OU=Pod1,OU=VMware,OU=EUC",
+    "customization_type": "CLONE_PREP",
+    "do_not_power_on_vms_after_creation": false,
+    "instant_clone_domain_account_id": "9f83ed94-4d44-4c9a-abd3-ffc23e7389de",
+    "reuse_pre_existing_accounts": true
+  },
+  "description": "Desktop pool description",
+  "display_assigned_machine_name": false,
+  "display_machine_alias": false,
+  "display_name": "instantclonepool",
+  "display_protocol_settings": {
+    "allow_users_to_choose_protocol": true,
+    "default_display_protocol": "BLAST",
+    "grid_vgpus_enabled": false,
+    "renderer3d": "MANAGE_BY_VSPHERE_CLIENT",
+    "session_collaboration_enabled": true
+  },
+  "enable_client_restrictions": false,
+  "enable_provisioning": false,
+  "enabled": false,
+  "name": "demo_pool",
+  "naming_method": "PATTERN",
+  "pattern_naming_settings": {
+    "max_number_of_machines": 5,
+    "naming_pattern": "Pool-{n:fixed=2}",
+    "number_of_spare_machines": 1,
+    "provisioning_time": "UP_FRONT"
+  },
+  "provisioning_settings": {
+    "add_virtual_tpm": false,
+    "base_snapshot_id": "snapshot-1",
+    "datacenter_id": "datacenter-1",
+    "host_or_cluster_id": "domain-s425",
+    "parent_vm_id": "vm-2",
+    "resource_pool_id": "resgroup-1",
+    "vm_folder_id": "group-v1"
+  },
+  "session_settings": {
+    "allow_multiple_sessions_per_user": false,
+    "allow_users_to_reset_machines": true,
+    "delete_or_refresh_machine_after_logoff": "DELETE",
+    "disconnected_session_timeout_minutes": 5,
+    "disconnected_session_timeout_policy": "AFTER",
+    "logoff_after_timeout": false,
+    "power_policy": "ALWAYS_POWERED_ON",
+  },
+  "session_type": "DESKTOP",
+  "source": "INSTANT_CLONE",
+  "stop_provisioning_on_error": false,
+  "storage_settings": {
+    "datastores": [
+      {
+        "datastore_id": "datastore-1",
+        "sdrs_cluster": false
+      },
+      {
+        "datastore_id": "datastore-1",
+        "sdrs_cluster": false
+      }
+    ],
+    "reclaim_vm_disk_space": false,
+    "use_separate_datastores_replica_and_os_disks": false,
+    "use_vsan": false
+  },
+  "transparent_page_sharing_scope": "VM",
+  "type": "AUTOMATED",
+  "user_assignment": "FLOATING",
+  "vcenter_id": "f148f3e8-db0e-4abb-9c33-7e5205ccd360"
+}
