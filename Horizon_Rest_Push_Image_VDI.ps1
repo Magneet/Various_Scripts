@@ -100,7 +100,7 @@ param (
     [bool]$StoponError = $true,
 
     [parameter(Mandatory = $false,
-    HelpMessage = "Use WAIT_FOR_LOGOFF or FORCE_LOGOFF".")]
+    HelpMessage = "Use WAIT_FOR_LOGOFF or FORCE_LOGOFF.")]
     [ValidateSet('WAIT_FOR_LOGOFF','FORCE_LOGOFF', IgnoreCase = $false)]
     [string]$logoff_policy = "WAIT_FOR_LOGOFF",
 

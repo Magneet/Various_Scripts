@@ -83,11 +83,11 @@ $ErrorActionPreference = 'Stop'
 # Preview info
 if($preview){
     write-host "Running in preview mode no actions will be taken" -foregroundcolor Magenta
- }
+}
 
- # Loading powercli modules
- Import-Module VMware.VimAutomation.HorizonView
- Import-Module VMware.VimAutomation.Core
+# Loading powercli modules
+Import-Module VMware.VimAutomation.HorizonView
+Import-Module VMware.VimAutomation.Core
 
 $hvserver1=connect-hvserver $ConnectionServerFQDN -credential $creds
 $Services1= $hvServer1.ExtensionData
