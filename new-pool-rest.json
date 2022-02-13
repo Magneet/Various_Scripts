@@ -46,7 +46,7 @@
     "disconnected_session_timeout_minutes": 5,
     "disconnected_session_timeout_policy": "AFTER",
     "logoff_after_timeout": false,
-    "power_policy": "ALWAYS_POWERED_ON",
+    "power_policy": "ALWAYS_POWERED_ON"
   },
   "session_type": "DESKTOP",
   "source": "INSTANT_CLONE",
