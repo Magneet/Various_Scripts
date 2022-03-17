@@ -1,12 +1,12 @@
 <#
     .SYNOPSIS
-    Send a message to all user sessions
+    Send a message to all global sessions
 
     .DESCRIPTION
-    This script uses the Horizon rest api's to all sessions in a horizon pod
+    This script uses the Horizon rest api's to all global sessions in a horizon cloud pod 
 
     .EXAMPLE
-    .\find_user_assigned_desktops.ps1 -Credential $creds -ConnectionServerFQDN pod2cbr1.loft.lab -message "test message" -message_type "ERROR"
+    .\Horizon_send_Global_messages.ps1 -Credential $creds -ConnectionServerFQDN pod2cbr1.loft.lab -message "test message" -message_type "ERROR"
 
     .PARAMETER Credential
     Mandatory: No
@@ -28,7 +28,7 @@
 
     .NOTES
     Created by: Wouter Kursten
-    First version: 23-12-2021
+    First version: 17-03-2022
 
     .COMPONENT
     Powershell Core
