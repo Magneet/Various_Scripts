@@ -31,6 +31,12 @@
     .PARAMETER HVConnectionServerFQDN
     FQDN for a connectionserver in the pod the pool belongs to.
 
+    .EXAMPLE
+    Set-Desktoppoolmachinecountandtype.ps1 -Credentials $creds  -HVDesktopPoolname Pod01-Pool02 -HVConnectionServerFQDN pod1cbr1.loft.lab -Provisioningtype ON_DEMAND -maxNumberOfMachines 10 -minNumberOfMachines 3 -ChangeProvisioningtype $true -numberOfSpareMachines 4
+    
+    .EXAMPLE
+    Set-Desktoppoolmachinecountandtype.ps1 -Credentials $creds  -HVDesktopPoolname Pod01-Pool02 -HVConnectionServerFQDN pod1cbr1.loft.lab -Provisioningtype UP_FRONT -maxNumberOfMachines 10 -ChangeProvisioningtype $false
+
     .NOTES
     This script requires VMWare PowerCLI to be installed on the machine running the script.
     PowerCLI can be installed through PowerShell (PowerShell version 5 or higher required) by running the command 'Install-Module VMWare.PowerCLI -Force -AllowCLobber -Scope AllUsers' Or by using the 'Install VMware PowerCLI' script.
@@ -85,7 +91,7 @@ Param
         HelpMessage='Change Provisioning type?'
     )]
     [ValidateSet("True","False")]
-    [string] $ChangeProvisioningtype = "False",
+    [bool] $ChangeProvisioningtype = $false,
 
     [Parameter(
         Position = 4,
@@ -336,7 +342,7 @@ $HVPoolID=($HVPool).id
 $hvpoolspec=Get-HVPoolSpec -HVConnectionServer $objHVConnectionServer -HVPoolID $HVPoolID
 $ProvisioningTime=($hvpoolspec).AutomatedDesktopData.VmNamingSettings.PatternNamingSettings.ProvisioningTime
 write-verbose "Checking if provisioningtype matches the current setting and if I am allowed to change it."
-if($ProvisioningTime -ne $provisioningtype -and $changeprovisioningtype -eq "False"){
+if($ProvisioningTime -ne $provisioningtype -and $changeprovisioningtype -eq $False){
     write-error "Provisioningtype of $provisioningtype does not match the current provisioningtype. Set changeprovisioningtype to True to change the provisioningtype"
     exit
 }
