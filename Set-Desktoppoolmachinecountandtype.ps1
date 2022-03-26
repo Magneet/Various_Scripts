@@ -37,6 +37,9 @@
     .EXAMPLE
     Set-Desktoppoolmachinecountandtype.ps1 -Credentials $creds  -HVDesktopPoolname Pod01-Pool02 -HVConnectionServerFQDN pod1cbr1.loft.lab -Provisioningtype UP_FRONT -maxNumberOfMachines 10 -ChangeProvisioningtype $false
 
+    .EXAMPLE
+    Set-Desktoppoolmachinecountandtype.ps1 -Credentials $creds  -HVDesktopPoolname Pod01-Pool02 -HVConnectionServerFQDN pod1cbr1.loft.lab -maxNumberOfMachines 10
+
     .NOTES
     This script requires VMWare PowerCLI to be installed on the machine running the script.
     PowerCLI can be installed through PowerShell (PowerShell version 5 or higher required) by running the command 'Install-Module VMWare.PowerCLI -Force -AllowCLobber -Scope AllUsers' Or by using the 'Install VMware PowerCLI' script.
@@ -62,7 +65,6 @@ Param
     [PSCredential] $Credentials,
 
     [Parameter(
-        Position = 0,
         Mandatory=$true,
         HelpMessage='Name of the Desktop Pool'
     )]
@@ -70,7 +72,6 @@ Param
     [string] $HVDesktopPoolname,
 
     [Parameter(
-        Position = 1,
         Mandatory=$true,
         HelpMessage='FQDN for the connection server'
     )]
@@ -78,15 +79,13 @@ Param
     [string] $HVConnectionServerFQDN,
 
     [Parameter(
-        Position = 2,
-        Mandatory=$true,
+        Mandatory=$false,
         HelpMessage='Provisioning type'
     )]
     [ValidateSet("UP_FRONT","ON_DEMAND")]
     [string] $Provisioningtype,
 
     [Parameter(
-        Position = 3,
         Mandatory=$false,
         HelpMessage='Change Provisioning type?'
     )]
@@ -94,7 +93,6 @@ Param
     [bool] $ChangeProvisioningtype = $false,
 
     [Parameter(
-        Position = 4,
         Mandatory=$true,
         HelpMessage='Maximum number of machines in the desktop.'
     )]
@@ -102,7 +100,6 @@ Param
     [int] $maxNumberOfMachines,
 
     [Parameter(
-        Position = 5,
         Mandatory=$false,
         ParameterSetName = 'ondemand',
         HelpMessage='The minimum number of machines to have provisioned if on demand provisioning is selected. Will be ignored if provisioningtype is set to UP_FRONT.'
@@ -111,7 +108,6 @@ Param
     [int] $minNumberOfMachines,
 
     [Parameter(
-        Position = 6,
         Mandatory=$false,
         ParameterSetName = 'ondemand',
         HelpMessage='Number of spare powered on machines. Will be ignored if provisioningtype is set to UP_FRONT.'
@@ -342,9 +338,14 @@ $HVPoolID=($HVPool).id
 $hvpoolspec=Get-HVPoolSpec -HVConnectionServer $objHVConnectionServer -HVPoolID $HVPoolID
 $ProvisioningTime=($hvpoolspec).AutomatedDesktopData.VmNamingSettings.PatternNamingSettings.ProvisioningTime
 write-verbose "Checking if provisioningtype matches the current setting and if I am allowed to change it."
-if($ProvisioningTime -ne $provisioningtype -and $changeprovisioningtype -eq $False){
-    write-error "Provisioningtype of $provisioningtype does not match the current provisioningtype. Set changeprovisioningtype to True to change the provisioningtype"
-    exit
+if($Provisioningtype){
+    if($ProvisioningTime -ne $provisioningtype -and $changeprovisioningtype -eq $False){
+        write-error "Provisioningtype of $provisioningtype does not match the current provisioningtype. Set changeprovisioningtype to True to change the provisioningtype"
+        exit
+    }
+}
+else{
+    $Provisioningtype = $ProvisioningTime
 }
 
 # We cannot change manual pools so we give a warning about this and exit the script.
