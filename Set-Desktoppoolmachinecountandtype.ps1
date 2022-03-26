@@ -308,12 +308,29 @@ function Set-HVPool {
     }
 }
 
-if($Provisioningtype -eq "ON_DEMAND"){
-    write-verbose "Checking if numberOfSpareMachines or minNumberOfMachines is missing"
-    if(!$minNumberOfMachines -or !$numberOfSpareMachines){
-        write-error "numberOfSpareMachines and minNumberOfMachines are required when using provisioningtype: $provisioningtype"
-        exit
-    }
+write-verbose "Script will change this Desktop Pool: $HVDesktopPoolName"
+write-verbose "Script will connect to this Connection Server: $HVConnectionServerFQDN "
+if($Provisioningtype){
+    write-verbose "Provisioningtype was set to $Provisioningtype"
+}
+else{
+    write-verbose "No ProvisioningType was provided"
+}
+
+write-verbose "ChangeProvisioningtype was set to $ChangeProvisioningtype"
+write-verbose "New Maximum Desktop Count is $maxNumberOfMachines "
+if($minNumberOfMachines){
+    write-verbose "minNumberOfMachines was set to $minNumberOfMachines"
+}
+else{
+    write-verbose "No minNumberOfMachines was provided"
+}
+
+if($numberOfSpareMachines){
+    write-verbose "numberOfSpareMachines was set to $numberOfSpareMachines"
+}
+else{
+    write-verbose "No numberOfSpareMachines was provided"
 }
 
 if($Credentials){
@@ -322,6 +339,8 @@ if($Credentials){
 else{
     $creds = get-credential
 }
+
+
 
 # Connect to the Horizon View Connection Server
 
@@ -337,15 +356,28 @@ $HVPoolID=($HVPool).id
 # Retreive the pool spec
 $hvpoolspec=Get-HVPoolSpec -HVConnectionServer $objHVConnectionServer -HVPoolID $HVPoolID
 $ProvisioningTime=($hvpoolspec).AutomatedDesktopData.VmNamingSettings.PatternNamingSettings.ProvisioningTime
+write-verbose "Current provisioningtype = $ProvisioningTime"
 write-verbose "Checking if provisioningtype matches the current setting and if I am allowed to change it."
 if($Provisioningtype){
     if($ProvisioningTime -ne $provisioningtype -and $changeprovisioningtype -eq $False){
         write-error "Provisioningtype of $provisioningtype does not match the current provisioningtype. Set changeprovisioningtype to True to change the provisioningtype"
         exit
     }
+    elseif($ProvisioningTime -ne $provisioningtype -and $changeprovisioningtype -eq $true){
+        $Provisioningtype=$Provisioningtype.toupper()
+        write-verbose "Changing Provisioningtype to $Provisioningtype"
+    }
 }
 else{
     $Provisioningtype = $ProvisioningTime
+}
+
+if($Provisioningtype -eq "ON_DEMAND"){
+    write-verbose "Checking if numberOfSpareMachines or minNumberOfMachines is missing"
+    if(!$minNumberOfMachines -or !$numberOfSpareMachines){
+        write-error "numberOfSpareMachines and minNumberOfMachines are required when using provisioningtype: $provisioningtype"
+        exit
+    }
 }
 
 # We cannot change manual pools so we give a warning about this and exit the script.
