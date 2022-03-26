@@ -16,6 +16,9 @@
     .PARAMETER Provisioningtype
     Use ON_DEMAND to provision all desktops up front (will ignore minNumberOfMachines and numberOfSpareMachines
 
+    .PARAMETER ChangeProvisioningtype
+    User either True or False to enable or disable the changing of the provisioning type
+
     .PARAMETER maxNumberOfMachines
     Maximum number of desktops in the pool
 
@@ -78,11 +81,11 @@ Param
 
     [Parameter(
         Position = 3,
-        Mandatory=$true,
+        Mandatory=$false,
         HelpMessage='Change Provisioning type?'
     )]
     [ValidateSet("True","False")]
-    [string] $ChangeProvisioningtype,
+    [string] $ChangeProvisioningtype = "False",
 
     [Parameter(
         Position = 4,
