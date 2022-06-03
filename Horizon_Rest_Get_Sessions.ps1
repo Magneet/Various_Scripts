@@ -101,12 +101,12 @@ function Get-HorizonRestData(){
         HelpMessage='url to the server i.e. https://pod1cbr1.loft.lab' )]
         [string] $ServerURL,
 
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory=$false,
         ParameterSetName="filteringandpagination",
         HelpMessage='Array of ordered hashtables' )]
         [array] $filters,
 
-        [Parameter(Mandatory=$true,
+        [Parameter(Mandatory=$false,
         ParameterSetName="filteringandpagination",
         HelpMessage='Type of filter Options: And, Or' )]
         [ValidateSet('And','Or')]
@@ -269,19 +269,19 @@ if($global){
     if($pod_name){
         $pod = $pods | Where-Object {$_.name -eq $pod_name}
         $podid=$pod.id
-        $sessions = get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid
+        $sessions = get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid -filteringandpagination
         return $sessions
     }
     else{
         $sessions=@()
         foreach ($pod in $pods){
             $podid=$pod.id
-            $sessions += get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid
+            $sessions += get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid -filteringandpagination
         }
         return $sessions
     }
 }
 else{
-    $sessions = Get-HorizonRestData -ServerURL $url -RestMethod "/inventory/v1/sessions" -accessToken $accessToken
+    $sessions = Get-HorizonRestData -ServerURL $url -RestMethod "/inventory/v1/sessions" -accessToken $accessToken -filteringandpagination
     return $sessions
 }
