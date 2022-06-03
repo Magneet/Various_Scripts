@@ -167,7 +167,7 @@ function Get-HorizonRestData(){
         $results = [System.Collections.ArrayList]@()
         $page = 1
         $uri = $urlstart+$page+"&size=$pagesize"
-        write-host $uri
+
         $response = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -ResponseHeadersVariable responseheader
         $response.foreach({$results.add($_)}) | out-null
         if ($responseheader.HAS_MORE_RECORDS -contains "TRUE") {
