@@ -213,7 +213,7 @@ function get-horizonglobalsessions(){
         [string] $podid
     )
     try{
-        $results=Get-HorizonRestData -ServerURL $url -RestMethod "/inventory/v1/global-sessions" -accessToken $accessToken -urldetails "pod_id=$podid"
+        $results=Get-HorizonRestData -ServerURL $url -RestMethod "/inventory/v1/global-sessions" -accessToken $accessToken -urldetails "pod_id=$podid" -filteringandpagination
     }
     catch{
         throw $_
@@ -269,19 +269,19 @@ if($global){
     if($pod_name){
         $pod = $pods | Where-Object {$_.name -eq $pod_name}
         $podid=$pod.id
-        $sessions = get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid -filteringandpagination
+        $sessions = get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid
         return $sessions
     }
     else{
         $sessions=@()
         foreach ($pod in $pods){
             $podid=$pod.id
-            $sessions += get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid -filteringandpagination
+            $sessions += get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -podid $podid
         }
         return $sessions
     }
 }
 else{
-    $sessions = $sessions += get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -filteringandpagination
+    $sessions = Get-HorizonRestData -ServerURL $url -RestMethod "/inventory/v1/sessions" -accessToken $accessToken -filteringandpagination
     return $sessions
 }
