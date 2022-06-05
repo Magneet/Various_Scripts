@@ -282,6 +282,6 @@ if($global){
     }
 }
 else{
-    $sessions = Get-HorizonRestData -ServerURL $url -RestMethod "/inventory/v1/sessions" -accessToken $accessToken -filteringandpagination
+    $sessions = $sessions += get-horizonglobalsessions -accessToken $accessToken -ServerURL $url -filteringandpagination
     return $sessions
 }
