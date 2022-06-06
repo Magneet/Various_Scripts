@@ -263,6 +263,9 @@ $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($B
 
 $accessToken = Open-HRConnection -username $username -password $UnsecurePassword -domain $Domain -url $url
 
+if($pod_name -and !$global){
+    [switch]$global=$true
+}
 
 if($global){
     $pods=get-pods -accessToken $accessToken -ServerURL $url
