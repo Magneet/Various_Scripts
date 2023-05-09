@@ -1,0 +1,1 @@
+mic product where "name like '%office%'" call uninstall
