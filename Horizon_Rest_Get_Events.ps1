@@ -1,3 +1,40 @@
+<#
+    .SYNOPSIS
+    Exports Horizon Event Database entries
+
+    .DESCRIPTION
+    This script uses the Horizon REST API's to extract Horizon EVent Database Entries
+
+    .PARAMETER Credential
+    Mandatory: No (unless MemoryinMB or CoresPerSocket is supplies)
+    Int Total number of cores.
+
+    .PARAMETER ConnectionServerFQDN
+    Mandatory: yes
+    FQDN of the connectionserver to connect to i.e. server.domain.dom
+
+    .PARAMETER SinceDate
+    Mandatory: yes
+    Datetime object for the earliest date to get events for
+
+    .PARAMETER AuditSeverityTypes
+    Mandatory: No
+    Array with severity types to get events for. Allowed entries are: INFO,WARNING,ERROR,AUDIT_SUCCESS,AUDIT_FAIL,UNKNOWN
+
+    .EXAMPLE
+    .\Horizon_Rest_Get_Events.ps1 -ConnectionServerFQDN pod1cbr1.loft.lab -sincedate (get-date).adddays(-100)
+    This will ask the user for credentials and export all event database entries for the last 100 days
+
+    .EXAMPLE
+    .\Horizon_Rest_Get_Events.ps1 -ConnectionServerFQDN pod1cbr1.loft.lab -sincedate (get-date).adddays(-100) -auditseveritytypes "ERROR","WARNING"
+    This will ask the user for credentials and export all event database entries for the last 100 days where the severity is ERROR or WARNING
+
+    .EXAMPLE
+    .\Horizon_Rest_Get_Events.ps1 -ConnectionServerFQDN pod1cbr1.loft.lab -sincedate (get-date).adddays(-100) -Credential $creds -auditseveritytypes "ERROR","WARNING"
+    This will use the supplied credentials and get Horizon Event database entries of the ERROR and WARNING type for the last 100 days.
+
+
+#>
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $false,
@@ -8,33 +45,16 @@ param (
     [ValidateNotNullOrEmpty()]
     [string] $ConnectionServerFQDN,
 
-    [Parameter(Mandatory = $true, HelpMessage = 'Treshold for Events to trigger on' )]
-    [ValidateNotNullOrEmpty()]
-    [int]$event_treshold,
-            
     [Parameter(Mandatory = $true, HelpMessage = 'Amount of hours to look back for events' )]
     [ValidateNotNullOrEmpty()]
-    [int]$hoursback
+    [datetime]$SinceDate,
+
+    [Parameter(Mandatory = $false, HelpMessage = 'Array of severity types to get events for i.e. "ERROR","INFO"' )]
+    [ValidateNotNullOrEmpty()]
+    [array]$AuditSeverityTypes
 )
+
 $ErrorActionPreference = 'Stop'
-
-function Get-CUStoredCredential {
-    param (
-        [parameter(Mandatory = $true,
-            HelpMessage = "The system the credentials will be used for.")]
-        [string]$System
-    )
-
-    # Get the stored credential object
-    $strCUCredFolder = "$([environment]::GetFolderPath('CommonApplicationData'))\ControlUp\ScriptSupport"
-    try {
-        Import-Clixml -LiteralPath $strCUCredFolder\$($env:USERNAME)_$($System)_Cred.xml
-    }
-    catch {
-        write-error $_
-    }
-}
-
 
 function Get-HRHeader() {
     param($accessToken)
@@ -43,6 +63,7 @@ function Get-HRHeader() {
         'Content-Type'  = "application/json"
     }
 }
+
 function Open-HRConnection() {
     param(
         [string] $username,
@@ -67,7 +88,6 @@ function Close-HRConnection() {
     )
     return Invoke-RestMethod -Method post -uri "$url/rest/logout" -ContentType "application/json" -Body ($refreshToken | ConvertTo-Json) -SkipCertificateCheck
 }
-
 
 function Get-HorizonRestData() {
     [CmdletBinding(DefaultParametersetName = 'None')] 
@@ -114,7 +134,7 @@ function Get-HorizonRestData() {
             HelpMessage = 'Extra additions to the query url that comes before the paging/filtering parts like brokering_pod_id=806ca in /rest/inventory/v1/global-sessions?brokering_pod_id=806ca&page=2&size=100' )]
         [string] $urldetails
     )
-    
+
     if ($filteringandpagination) {
         if ($filters) {
             $filterhashtable = [ordered]@{}
@@ -142,20 +162,20 @@ function Get-HorizonRestData() {
         $results = [System.Collections.ArrayList]@()
         $page = 1
         $uri = $urlstart + $page + "&size=$pagesize"
-        $response = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck
+        $response = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck -ResponseHeadersVariable "responseheader"
         $response.foreach({ $results.add($_) }) | out-null
         if ($responseheader.HAS_MORE_RECORDS -contains "TRUE") {
             do {
                 $page++
                 $uri = $urlstart + $page + "&size=$pagesize"
-                $response = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck
+                $response = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck -ResponseHeadersVariable "responseheader"
                 $response.foreach({ $results.add($_) }) | out-null
             } until ($responseheader.HAS_MORE_RECORDS -notcontains "TRUE")
         }
     }
     elseif ($id) {
         $uri = $ServerURL + "/rest/" + $RestMethod + "/" + $id
-        $results = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck
+        $results = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck -ResponseHeadersVariable "responseheader"
     }
     else {
         if ($urldetails) {
@@ -164,70 +184,59 @@ function Get-HorizonRestData() {
         else {
             $uri = $ServerURL + "/rest/" + $RestMethod
         }
-        
-        $results = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck
+        $results = Invoke-RestMethod $uri -Method 'GET' -Headers (Get-HRHeader -accessToken $accessToken) -SkipCertificateCheck -ResponseHeadersVariable "responseheader"
     }
 
     return $results
-}
-
-function Get-Pods() {
-    [CmdletBinding(DefaultParametersetName = 'None')] 
-    param(
-        [Parameter(Mandatory = $true,
-            HelpMessage = 'url to the server i.e. https://pod1cbr1.loft.lab' )]
-        [string] $ServerURL,
-
-        [Parameter(Mandatory = $true,
-            HelpMessage = 'Part after the url in the swagger UI i.e. /external/v1/ad-users-or-groups' )]
-        [PSCustomObject] $accessToken
-    )
-
-    try {
-        $results = Get-HorizonRestData -ServerURL $url -RestMethod "/federation/v1/pods" -accessToken $accessToken
-    }
-    catch {
-        throw $_
-    }
-    return $results
-}
-
-# Get the stored credentials for running the script
-try {
-    [PSCredential]$CredsHorizon = Get-CUStoredCredential -System 'HorizonView'
-}
-catch {
-    $CredsHorizon = get-credential
 }
 
 $ErrorActionPreference = 'Stop'
 
+# Get the stored credentials for running the script
+if ($Credential) {
+    $creds = $credential
+}
+else {
+    $creds = get-credential
+}
 
 $date = get-date
 
-$sinceDate = (get-date).AddHours(-$hoursback)
 $nowepoch = ([DateTimeOffset]$date).ToUnixTimeMilliseconds()
 $thenepoch = ([DateTimeOffset]$sinceDate).ToUnixTimeMilliseconds()
 
 # $epoch = ([DateTimeOffset]$starttime).ToUnixTimeMilliseconds()
 
-
-$username = ($CredsHorizon.username).split("\")[1]
-$domain = ($CredsHorizon.username).split("\")[0]
-$password = $CredsHorizon.password
+$username = ($creds.GetNetworkCredential()).userName
+$domain = ($creds.GetNetworkCredential()).Domain
+$UnsecurePassword = ($creds.GetNetworkCredential()).password
 
 $url = "https://$ConnectionServerFQDN"
-
-$BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password) 
-$UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 
 $login_tokens = Open-HRConnection -username $username -password $UnsecurePassword -domain $Domain -url $url
 $AccessToken = $login_tokens | Select-Object Access_token
 $RefreshToken = $login_tokens | Select-Object Refresh_token
-[array]$audittypes = "WARNING", "ERROR", "AUDIT_FAIL"
+
 $auditevents = @()
 
-foreach ($audittype in $audittypes) {
+if ($auditseveritytypes) {
+    foreach ($audittype in $auditseveritytypes) {
+        $auditfilters = @()
+        $timefilter = [ordered]@{}
+        $timefilter.add('type', 'Between')
+        $timefilter.add('name', 'time')
+        $timefilter.add('fromValue', $thenepoch)
+        $timefilter.add('toValue', $nowepoch)
+        $auditfilters += $timefilter
+        $auditfilter = [ordered]@{}
+        $auditfilter.add('type', 'Equals')
+        $auditfilter.add('name', 'severity')
+        $auditfilter.add('value', $audittype)
+        $auditfilters += $auditfilter
+        $rawauditevents += Get-HorizonRestData -ServerURL $url -RestMethod "/external/v1/audit-events" -accessToken $accessToken -filteringandpagination -Filtertype "And" -filters $auditfilters
+    }
+}
+else {
     $auditfilters = @()
     $timefilter = [ordered]@{}
     $timefilter.add('type', 'Between')
@@ -235,15 +244,22 @@ foreach ($audittype in $audittypes) {
     $timefilter.add('fromValue', $thenepoch)
     $timefilter.add('toValue', $nowepoch)
     $auditfilters += $timefilter
-    $auditfilter = [ordered]@{}
-    $auditfilter.add('type', 'Equals')
-    $auditfilter.add('name', 'severity')
-    $auditfilter.add('value', $audittype)
-    $auditfilters += $auditfilter
-    $auditevents += Get-HorizonRestData -ServerURL $url -RestMethod "/external/v1/audit-events" -accessToken $accessToken -filteringandpagination -Filtertype "And" -filters $auditfilters
+    $rawauditevents = Get-HorizonRestData -ServerURL $url -RestMethod "/external/v1/audit-events" -accessToken $accessToken -filteringandpagination -Filtertype "And" -filters $auditfilters
 }
-$auditevents = $auditevents | sort-object time -desc
-return $auditevents
+$rawauditevents = $rawauditevents | sort-object time -desc
 
+$auditevents = New-Object System.Collections.ArrayList
+foreach ($event in $rawauditevents) {
+    $readabletimestamp = ([datetimeoffset]::FromUnixTimeMilliseconds(($event).Time)).ToLocalTime()
+    $readabletimestamputc = [datetimeoffset]::FromUnixTimeMilliseconds(($event).Time)
+    $timeepoch = $event.time
+    $event.psobject.Properties.Remove('Time')
+    $event | Add-Member -MemberType NoteProperty -Name time -Value $readabletimestamp
+    $event | Add-Member -MemberType NoteProperty -Name time_utc -Value $readabletimestamputc
+    $event | Add-Member -MemberType NoteProperty -Name time_epoch -Value $timeepoch
+    $auditevents.add($event) | out-null
+}
+
+return $auditevents
 
 Close-HRConnection -refreshToken $RefreshToken -url $url
